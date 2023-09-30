@@ -54,27 +54,25 @@ def search_by_keyword(key=key):
             'key' : str(key)
         }
         response = requests.get(url, params=params)
-        #print(response)
-        #print(response.text)
-        for video in json.loads(response.text)['items']:
-            #print(video)
-            #print(video['id']['videoId'])
-            #print("Video ID ", video['id']['videoId'], "\n", "Title", video['snippet']['title'], "\n", "Description", video['snippet']['description'], "\n\n")
-            video_ids.append(str(video['id']['videoId']))
-            video_titles.append(str(video['snippet']['title']))
-            video_description.append(str(video['snippet']['description']))
-            channel_ids.append(str(video['snippet']['channelId']))
-            channel_title.append(str(video['snippet']['channelTitle']))
-            publish_time.append(str(video['snippet']['publishTime']))
+        print(response)
+        try:
+            for video in json.loads(response.text)['items']:
+                #try:
+                    #if str(video['id']['videoId']) not in video_details['Video ID']:
+                video_ids.append(str(video['id']['videoId']))
+                video_titles.append(str(video['snippet']['title']))
+                video_description.append(str(video['snippet']['description']))
+                channel_ids.append(str(video['snippet']['channelId']))
+                channel_title.append(str(video['snippet']['channelTitle']))
+                publish_time.append(str(video['snippet']['publishTime']))
+                #except:
+                    #continue
+        except:
+            continue
     return video_ids, video_titles, video_description, channel_ids, channel_title, publish_time
 
 def get_video_captions(vid):
-    #videos = search_by_keyword()
     full_caption = ''
-    #print(videos)
-    #for id in videos:
-        #print("********************************************************************")
-        #print("\n\n\n\n")
     try:
         txt = YouTubeTranscriptApi.get_transcript(vid)
         for line in txt:
@@ -101,15 +99,8 @@ def get_video_comments(k, vid):
             vid_comment[str(comment['snippet']['topLevelComment']['snippet']['authorDisplayName'])] = comment['snippet']['topLevelComment']['snippet']['textDisplay']
     return vid_comment
     
-
+#for i in range(10):
 returned_video_ids, returned_video_titles, returned_video_descriptions, returned_channel_ids, returned_channel_titles, returned_publish_times = search_by_keyword(key)
-#print(returned_video_ids)
-#print(returned_video_titles)
-#print(returned_video_descriptions)
-#print(returned_channel_ids)
-#print(returned_channel_titles)
-#print(returned_publish_times)
-
 for v in range(len(returned_video_ids)):
     try:
         caption = get_video_captions(returned_video_ids[v])
@@ -122,12 +113,12 @@ for v in range(len(returned_video_ids)):
     except:
         video_details['Video comments'].append("No comments")
 
-video_details['Video ID'] = returned_video_ids
-video_details['Video Title'] = returned_video_titles
-video_details['Video Description'] = returned_video_descriptions
-video_details['Channel ID'] = returned_channel_ids
-video_details['Channel Title'] = returned_channel_titles
-video_details['Publish time'] = returned_publish_times
+video_details['Video ID'].extend(returned_video_ids)
+video_details['Video Title'].extend(returned_video_titles)
+video_details['Video Description'].extend(returned_video_descriptions)
+video_details['Channel ID'].extend(returned_channel_ids)
+video_details['Channel Title'].extend(returned_channel_titles)
+video_details['Publish time'].extend(returned_publish_times)
 
 print(video_details)
 
