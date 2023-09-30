@@ -12,6 +12,7 @@ from youtube_test import *
 yt, key = perform_authentication()
 dict_of_youtubers_usernames = {'Hen Mazzig':'UCEkLqAhHhZI3NKmDAFbljpA', 'Rudy Rochman':'UCOcfVau723M1bHKJ0GdCbgQ', 'Noa Tishby':'UC1XUDNlTtcmpFgdF6hatRjQ', 'Hallel Silverman':'UCvIJvUax60-XsYy1_Spuikw', 'Ysabella Hazan':'UC-tIjpmGKnJXRJqaFYDvkjQ'}
 queries = ['jew', 'jews', 'antisemitism', 'antizionism', 'zionazis', 'zionism', 'Israel']
+video_details = {'Video ID':[], 'Video Title':[], 'Video Description':[], 'Video caption':[], 'Video comments':[], 'Channel ID':[], 'Channel Title':[], 'Publish time':[]}
 
 def get_channel_details():
 
@@ -42,14 +43,9 @@ def get_channel_details():
     excel_file = 'channel_details.xlsx'
     sheet_name = 'Sheet1'
     df.to_excel(excel_file, sheet_name=sheet_name, index=False)
-    #print(channel_details_data)
-    #for key, value in channel_details_data.items():
-        #print(len(key), len(value), '\n')
-
-        
 
 def search_by_keyword(key=key):
-    video_ids = []
+    video_ids, video_titles, video_description, channel_ids, channel_title, publish_time  = [], [], [], [], [], []
     for query in queries:
         url = 'https://www.googleapis.com/youtube/v3/search'
         params = {
@@ -58,55 +54,85 @@ def search_by_keyword(key=key):
             'key' : str(key)
         }
         response = requests.get(url, params=params)
+        #print(response)
+        #print(response.text)
         for video in json.loads(response.text)['items']:
-            print("Video ID ", video['id']['videoId'], "\n", "Title", video['snippet']['title'], "\n", "Description", video['snippet']['description'], "\n\n")
+            #print(video)
+            #print(video['id']['videoId'])
+            #print("Video ID ", video['id']['videoId'], "\n", "Title", video['snippet']['title'], "\n", "Description", video['snippet']['description'], "\n\n")
             video_ids.append(str(video['id']['videoId']))
-    return video_ids
+            video_titles.append(str(video['snippet']['title']))
+            video_description.append(str(video['snippet']['description']))
+            channel_ids.append(str(video['snippet']['channelId']))
+            channel_title.append(str(video['snippet']['channelTitle']))
+            publish_time.append(str(video['snippet']['publishTime']))
+    return video_ids, video_titles, video_description, channel_ids, channel_title, publish_time
 
-def get_video_captions():
-    videos = search_by_keyword()
+def get_video_captions(vid):
+    #videos = search_by_keyword()
     full_caption = ''
-    print(videos)
-    for id in videos:
-        print("********************************************************************")
-        print("\n\n\n\n")
-        try:
-            txt = YouTubeTranscriptApi.get_transcript(id)
-            for line in txt:
-                full_caption = full_caption + line['text'] + ' '
-            print(full_caption)
-            print("********************************************************************")
-            print("\n\n\n\n")
-        except:
-            continue
+    #print(videos)
+    #for id in videos:
+        #print("********************************************************************")
+        #print("\n\n\n\n")
+    try:
+        txt = YouTubeTranscriptApi.get_transcript(vid)
+        for line in txt:
+            full_caption = full_caption + line['text'] + ' '
+        return full_caption         
+    except:
+        pass
 
-def get_video_comments(key=key):
-    videos = search_by_keyword()
+def get_video_comments(k, vid):
+    #videos = search_by_keyword()
     url = 'https://www.googleapis.com/youtube/v3/commentThreads'
-    for video_id in videos:
-        params = {
-            'key': str(key),
-            'textFormat': 'plainText',
-            'part' : 'snippet',
-            'videoId' : str(video_id),
-            'maxResults' : '20'
-        }
-        response = requests.get(url, params=params)
-        for comment in json.loads(response.text)['items']:
-            print(json.dumps(comment['snippet']['topLevelComment']['snippet']['authorDisplayName'], indent=4),
-                json.dumps(comment['snippet']['topLevelComment']['snippet']['textDisplay'], indent=4))
-        print("^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n\n\n\n")
+    #for video_id in videos:
+    params = {
+        'key': str(k),
+        'textFormat': 'plainText',
+        'part' : 'snippet',
+        'videoId' : str(vid),
+        'maxResults' : '20'
+    }
+    response = requests.get(url, params=params)
+    vid_comment = {}
+    for comment in json.loads(response.text)['items']:
+        if str(comment['snippet']['topLevelComment']['snippet']['authorDisplayName']) not in vid_comment:
+            vid_comment[str(comment['snippet']['topLevelComment']['snippet']['authorDisplayName'])] = comment['snippet']['topLevelComment']['snippet']['textDisplay']
+    return vid_comment
+    
 
-#for name, channel_id in dict_of_youtubers_usernames.items():
-#    get_channel_details(channel_id)
+returned_video_ids, returned_video_titles, returned_video_descriptions, returned_channel_ids, returned_channel_titles, returned_publish_times = search_by_keyword(key)
+#print(returned_video_ids)
+#print(returned_video_titles)
+#print(returned_video_descriptions)
+#print(returned_channel_ids)
+#print(returned_channel_titles)
+#print(returned_publish_times)
 
-#    print('\n')
-#    print("********************************************************************")
-#    print('\n')
+for v in range(len(returned_video_ids)):
+    try:
+        caption = get_video_captions(returned_video_ids[v])
+        video_details['Video caption'].append(caption)
+    except:
+        video_details['Video caption'].append("No caption")
+    try:
+        comments = get_video_comments(key, returned_video_ids[v])
+        video_details['Video comments'].append(comments)
+    except:
+        video_details['Video comments'].append("No comments")
 
-#search_by_keyword()
-#get_video_captions()
-#get_video_comments()
-#print("***")
+video_details['Video ID'] = returned_video_ids
+video_details['Video Title'] = returned_video_titles
+video_details['Video Description'] = returned_video_descriptions
+video_details['Channel ID'] = returned_channel_ids
+video_details['Channel Title'] = returned_channel_titles
+video_details['Publish time'] = returned_publish_times
 
-get_channel_details()
+print(video_details)
+
+
+video_df = pd.DataFrame(video_details)
+video_excel_file = 'video_details.xlsx'
+sheet_name = 'Sheet1'
+video_df.to_excel(video_excel_file, sheet_name=sheet_name, index=False)
