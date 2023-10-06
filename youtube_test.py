@@ -8,42 +8,10 @@ from google.auth.transport.requests import Request
 
 
 def perform_authentication():
-    api_key = 'AIzaSyD4tYbAxtQXwc3TbcrZokbSU_M_NBlM_FI'
+    api_key = 'AIzaSyDyMgeqm-vRk7Tu8GpK5ibcicdjxHSSr7U'
     youtube = build('youtube', 'v3', developerKey=api_key)
     return youtube, api_key
 
-"""
-#Channel details
-get_channel_details_request = youtube.channels().list(part='statistics')
-                                                      #forUsername='', #id='')
-
-#search by keywords
-search_by_keyword_request = youtube.search().list(part='snippet', q='jews', maxResults=50)
-
-#Get video captions
-txt = YouTubeTranscriptApi.get_transcript('6foH3Zc82ZQ')
-#for i in txt:
-    #print(i)
-
-video_id = '6foH3Zc82ZQ'
-max_results = 50
-comments_url = f'https://www.googleapis.com/youtube/v3/commentThreads?key={api_key}&textFormat=plainText&part=snippet&videoId={video_id}&maxResults={max_results}'
-
-#gives playlist upload id
-playlist_upload_request = youtube.channels().list(part='contentDetails', id='UCCezIgC97PvUuR4_gbFUs5g')
-
-playlist_info_request = youtube.playlistItems().list(part='status', playlistId='UUCezIgC97PvUuR4_gbFUs5g')
-
-#Fetches comments
-comment_threads_request = youtube.commentThreads().list(part='snippet', videoId='7INMI73qzjI', maxResults=100)
-
-#Fetches list of channels that this person is subscribed to 
-subscription_list_request = youtube.subscriptions().list(part='subscriberSnippet', channelId='UClKtjI8iP1Q9EvsiqNbgYoQ', maxResults=100)
-
-response = subscription_list_request.execute()
-pretty_json = json.dumps(response, indent=4)
-#print(pretty_json)
-"""
 credentials = None
 
 # token.pickle stores the user's credentials from previously successful logins
@@ -75,16 +43,6 @@ if not credentials or not credentials.valid:
         with open('token.pickle', 'wb') as f:
             print('Saving Credentials for Future Use...')
             pickle.dump(credentials, f)
-
-"""
-This is for doing one time authentication
-flow = InstalledAppFlow.from_client_secrets_file('client_secrets.json', scopes=['https://www.googleapis.com/auth/youtube.readonly'])
-
-flow.run_local_server(port=8080, prompt='consent', authorization_prompt_message='')
-credentials = flow.credentials
-print(credentials.to_json())
-
-"""
 
 """
 {"token": "ya29.a0AfB_byD-FIZ7fojW75ekh0vv8LanEUFRbvUkoAZWFZMpRBUjqFL7Jt4XkkIO7uNm5Na0tWdybP3aiNmgLenuhY14ooiyN-poqx8UcCOmbkExWlmUSxJSwXo1_g2WzWqMJp6ffhALVAoDB994oUPDaaJZFnZ_ZQAz2otkaCgYKARESARESFQGOcNnCPBK39gz9e90YBeXuf8a5iQ0171", 

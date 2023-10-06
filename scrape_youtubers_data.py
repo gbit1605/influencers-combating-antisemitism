@@ -10,8 +10,22 @@ from google.auth.transport.requests import Request
 from youtube_test import *
 
 yt, key = perform_authentication()
-dict_of_youtubers_usernames = {'Hen Mazzig':'UCEkLqAhHhZI3NKmDAFbljpA', 'Rudy Rochman':'UCOcfVau723M1bHKJ0GdCbgQ', 'Noa Tishby':'UC1XUDNlTtcmpFgdF6hatRjQ', 'Hallel Silverman':'UCvIJvUax60-XsYy1_Spuikw', 'Ysabella Hazan':'UC-tIjpmGKnJXRJqaFYDvkjQ'}
-queries = ['jew', 'jews', 'antisemitism', 'antizionism', 'zionazis', 'zionism', 'Israel']
+dict_of_youtubers_usernames = {'Hen Mazzig':'UCEkLqAhHhZI3NKmDAFbljpA', 
+                               'Rudy Rochman':'UCOcfVau723M1bHKJ0GdCbgQ', 
+                               'Noa Tishby':'UC1XUDNlTtcmpFgdF6hatRjQ', 
+                               'Hallel Silverman':'UCvIJvUax60-XsYy1_Spuikw', 
+                               'Ysabella Hazan':'UC-tIjpmGKnJXRJqaFYDvkjQ'}
+
+manually_searched_youtube_antisemitism_combat_influencers = {
+    'Tovia Singer': ['ToviaSinger1', 'UCaw8quRcRzjmw0BI1vn-dnA'],
+    'SnappyDragon': ['SnappyDragon', 'UCTIcttrGKvoyZuPc8Xb_lbg'],
+    'Yad Vashem': ['YadVashem', 'UCMIWdcUSEHSIGgTEgT5fU4g'],
+    'Hananya Naftali': ['HananyaNaftali', 'UCIu679sa2q5Lw9CB95_-hdw'],
+    'American Jewish Committee': ['AJCGlobal', 'UClLJWa0q-sSZQ_Jt9EEWWUg'],
+    'AishJewish': ['Aishdotcom', 'UC8XGOrE1U_HYdYFonEuyCfw']
+}
+#queries = ['jew', 'jews', 'antisemitism', 'antizionism', 'zionazis', 'zionism', 'Israel']
+queries  = ['Holocaust', 'white supremacy', 'jew', 'hatred', 'xenophobia', 'neo-nazi']
 video_details = {'Video ID':[], 'Video Title':[], 'Video Description':[], 'Video caption':[], 'Video comments':[], 'Channel ID':[], 'Channel Title':[], 'Publish time':[]}
 
 def get_channel_details():
@@ -51,7 +65,8 @@ def search_by_keyword(key=key):
         params = {
             'part' : 'snippet',
             'q' : str(query),
-            'key' : str(key)
+            'key' : str(key), 
+            'maxResults' : '50'
         }
         response = requests.get(url, params=params)
         print(response)
@@ -98,8 +113,8 @@ def get_video_comments(k, vid):
         if str(comment['snippet']['topLevelComment']['snippet']['authorDisplayName']) not in vid_comment:
             vid_comment[str(comment['snippet']['topLevelComment']['snippet']['authorDisplayName'])] = comment['snippet']['topLevelComment']['snippet']['textDisplay']
     return vid_comment
-    
-#for i in range(10):
+
+
 returned_video_ids, returned_video_titles, returned_video_descriptions, returned_channel_ids, returned_channel_titles, returned_publish_times = search_by_keyword(key)
 for v in range(len(returned_video_ids)):
     try:
@@ -124,6 +139,20 @@ print(video_details)
 
 
 video_df = pd.DataFrame(video_details)
-video_excel_file = 'video_details.xlsx'
+video_excel_file = 'video_details_4.xlsx'
 sheet_name = 'Sheet1'
 video_df.to_excel(video_excel_file, sheet_name=sheet_name, index=False)
+
+
+def get_subscriber_list(key=key):
+    url = 'https://youtube.googleapis.com/youtube/v3/subscriptions'
+
+    for name, value in manually_searched_youtube_antisemitism_combat_influencers.items():
+        params = {
+            'part' : 'snippet',
+            'channelId' : str(value[1]),
+            'key' : str(key),
+            'alt' : 'json'
+        }
+        response = requests.get(url, params=params)
+        print(response.text)
