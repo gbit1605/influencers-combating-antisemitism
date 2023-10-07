@@ -111,7 +111,9 @@ def get_video_comments(k, vid):
     vid_comment = {}
     for comment in json.loads(response.text)['items']:
         if str(comment['snippet']['topLevelComment']['snippet']['authorDisplayName']) not in vid_comment:
-            vid_comment[str(comment['snippet']['topLevelComment']['snippet']['authorDisplayName'])] = comment['snippet']['topLevelComment']['snippet']['textDisplay']
+            vid_comment[str(comment['snippet']['topLevelComment']['snippet']['authorDisplayName'])] = [comment['snippet']['topLevelComment']['snippet']['authorChannelId']['value'],
+                                                                                                       comment['snippet']['topLevelComment']['snippet']['textDisplay']]
+                                                                                                       
     return vid_comment
 
 
@@ -139,20 +141,8 @@ print(video_details)
 
 
 video_df = pd.DataFrame(video_details)
-video_excel_file = 'video_details_4.xlsx'
+video_excel_file = 'video_details_6.xlsx'
 sheet_name = 'Sheet1'
 video_df.to_excel(video_excel_file, sheet_name=sheet_name, index=False)
 
 
-def get_subscriber_list(key=key):
-    url = 'https://youtube.googleapis.com/youtube/v3/subscriptions'
-
-    for name, value in manually_searched_youtube_antisemitism_combat_influencers.items():
-        params = {
-            'part' : 'snippet',
-            'channelId' : str(value[1]),
-            'key' : str(key),
-            'alt' : 'json'
-        }
-        response = requests.get(url, params=params)
-        print(response.text)
