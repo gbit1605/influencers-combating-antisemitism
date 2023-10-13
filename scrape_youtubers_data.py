@@ -107,16 +107,46 @@ def get_video_comments(k, vid):
         'videoId' : str(vid),
         'maxResults' : '20'
     }
+    
     response = requests.get(url, params=params)
     vid_comment = {}
     for comment in json.loads(response.text)['items']:
         if str(comment['snippet']['topLevelComment']['snippet']['authorDisplayName']) not in vid_comment:
-            vid_comment[str(comment['snippet']['topLevelComment']['snippet']['authorDisplayName'])] = [comment['snippet']['topLevelComment']['snippet']['authorChannelId']['value'],
-                                                                                                       comment['snippet']['topLevelComment']['snippet']['textDisplay']]
+            #vid_comment[str(comment['snippet']['topLevelComment']['snippet']['authorDisplayName'])] = [comment['snippet']['topLevelComment']['snippet']['authorChannelId']['value'], comment['snippet']['topLevelComment']['snippet']['textDisplay']]
+            list_of_commentors.append(comment['snippet']['topLevelComment']['snippet']['authorChannelId']['value'])
                                                                                                        
     return vid_comment
 
+list_of_commentors = []
 
+def get_only_commentors_channel_ids(k=key):
+    df_videos = pd.read_excel('video_details.xlsx')
+    list_of_videos = list(df_videos['Video ID'])
+    for vid in list_of_videos:
+        url = 'https://www.googleapis.com/youtube/v3/commentThreads'
+        params = {
+            'key': str(k),
+            'textFormat': 'plainText',
+            'part' : 'snippet',
+            'videoId' : str(vid),
+            'maxResults' : '20'
+        }
+        
+        response = requests.get(url, params=params)
+        try:
+            for comment in json.loads(response.text)['items']:
+                    list_of_commentors.append(comment['snippet']['topLevelComment']['snippet']['authorChannelId']['value'])
+        except:
+            pass
+
+get_only_commentors_channel_ids(key)
+#print(list_of_commentors)
+commentors_channel_ids = pd.DataFrame({'Commentors Channel IDs':list_of_commentors})
+comments_excel_file = 'commentors_channel_ids.xlsx'
+sheet_name = 'Sheet1'
+commentors_channel_ids.to_excel(comments_excel_file, sheet_name=sheet_name, index=False)
+
+"""
 returned_video_ids, returned_video_titles, returned_video_descriptions, returned_channel_ids, returned_channel_titles, returned_publish_times = search_by_keyword(key)
 for v in range(len(returned_video_ids)):
     try:
@@ -146,3 +176,4 @@ sheet_name = 'Sheet1'
 video_df.to_excel(video_excel_file, sheet_name=sheet_name, index=False)
 
 
+"""
